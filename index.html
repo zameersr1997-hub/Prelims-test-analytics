@@ -36,6 +36,9 @@
       <button onclick="openBulkModal()" id="btnBulkPaste" class="px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 transition">
         📋 Bulk Paste / CSV Grid
       </button>
+      <button onclick="clearAllData()" id="btnClearData" class="px-3 py-2 rounded-lg text-xs font-semibold bg-rose-600/20 text-rose-300 border border-rose-500/40 hover:bg-rose-600/30 transition">
+        🗑️ Clear All Test Data
+      </button>
       <button onclick="openAuthModal()" id="roleBadge" class="px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition">
         🔑 Mode: Mentor Admin
       </button>
@@ -133,11 +136,11 @@
           <div class="grid grid-cols-2 gap-2 pt-1">
             <div>
               <label class="block text-emerald-400 mb-1 font-medium">Right Answers</label>
-              <input type="number" id="testRight" min="0" max="100" value="58" oninput="updateMarkingPreview()" class="w-full" />
+              <input type="number" id="testRight" min="0" max="100" value="0" oninput="updateMarkingPreview()" class="w-full" />
             </div>
             <div>
               <label class="block text-rose-400 mb-1 font-medium">Wrong Answers</label>
-              <input type="number" id="testWrong" min="0" max="100" value="24" oninput="updateMarkingPreview()" class="w-full" />
+              <input type="number" id="testWrong" min="0" max="100" value="0" oninput="updateMarkingPreview()" class="w-full" />
             </div>
           </div>
 
@@ -145,41 +148,41 @@
           <div class="p-3 bg-slate-900/90 rounded-lg border border-slate-800 grid grid-cols-4 text-center">
             <div>
               <span class="block text-[10px] text-slate-400">Attempted</span>
-              <span id="prevAttempt" class="font-bold text-slate-200">82</span>
+              <span id="prevAttempt" class="font-bold text-slate-200">0</span>
             </div>
             <div>
               <span class="block text-[10px] text-slate-400">Accuracy</span>
-              <span id="prevAcc" class="font-bold text-emerald-400">70.7%</span>
+              <span id="prevAcc" class="font-bold text-emerald-400">0.0%</span>
             </div>
             <div>
               <span class="block text-[10px] text-slate-400">Neg Bleed</span>
-              <span id="prevNeg" class="font-bold text-rose-400">-16.0</span>
+              <span id="prevNeg" class="font-bold text-rose-400">-0.0</span>
             </div>
             <div>
               <span class="block text-[10px] text-slate-400">Net Marks</span>
-              <span id="prevNet" class="font-bold text-blue-400">100.0</span>
+              <span id="prevNet" class="font-bold text-blue-400">0.0</span>
             </div>
           </div>
 
-          <!-- Root-Cause Mistake Breakdown (Solves Repeated Mistakes) -->
+          <!-- Root-Cause Mistake Breakdown -->
           <div class="border-t border-slate-800 pt-2">
             <label class="block text-amber-300 font-medium mb-1.5">Why did Wrong Answers happen? (Student Reflection)</label>
             <div class="grid grid-cols-4 gap-1.5">
               <div>
                 <span class="block text-[10px] text-slate-400">Silly/Read</span>
-                <input type="number" id="errSilly" min="0" value="5" class="w-full text-center" />
+                <input type="number" id="errSilly" min="0" value="0" class="w-full text-center" />
               </div>
               <div>
                 <span class="block text-[10px] text-slate-400">Concept Gap</span>
-                <input type="number" id="errConcept" min="0" value="8" class="w-full text-center" />
+                <input type="number" id="errConcept" min="0" value="0" class="w-full text-center" />
               </div>
               <div>
                 <span class="block text-[10px] text-slate-400">50:50 Fail</span>
-                <input type="number" id="err5050" min="0" value="7" class="w-full text-center" />
+                <input type="number" id="err5050" min="0" value="0" class="w-full text-center" />
               </div>
               <div>
                 <span class="block text-[10px] text-slate-400">Blind Guess</span>
-                <input type="number" id="errGuess" min="0" value="4" class="w-full text-center" />
+                <input type="number" id="errGuess" min="0" value="0" class="w-full text-center" />
               </div>
             </div>
           </div>
@@ -203,7 +206,7 @@
       </div>
     </div>
 
-    <!-- 15-Student Diagnostic Matrix & Academy Classification -->
+    <!-- 15-Student Diagnostic Matrix -->
     <div class="card p-5">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
         <div>
@@ -241,9 +244,7 @@
 
   </main>
 
-  <!-- ========================================== -->
-  <!-- EDITABLE 15-STUDENT ROSTER & PIN MODAL     -->
-  <!-- ========================================== -->
+  <!-- EDITABLE 15-STUDENT ROSTER & PIN MODAL -->
   <div id="rosterModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
     <div class="card max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -269,9 +270,7 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- UNIVERSAL BULK PASTE / CSV IMPORTER MODAL  -->
-  <!-- ========================================== -->
+  <!-- UNIVERSAL BULK PASTE / CSV IMPORTER MODAL -->
   <div id="bulkModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
     <div class="card max-w-2xl w-full p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -320,9 +319,7 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- PIN AUTHENTICATION MODAL                   -->
-  <!-- ========================================== -->
+  <!-- PIN AUTHENTICATION MODAL -->
   <div id="authModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
     <div class="card max-w-sm w-full p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -346,34 +343,27 @@
     let currentRole = { mode: "ADMIN", studentId: "ALL", name: "Mentor Admin" };
 
     const DEFAULT_STUDENTS = [
-      { id: "S01", name: "Aamir Khan", pin: "1101" },
-      { id: "S02", name: "Sana Fatima", pin: "1102" },
-      { id: "S03", name: "Md. Rizwan", pin: "1103" },
-      { id: "S04", name: "Zoya Siddiqui", pin: "1104" },
-      { id: "S05", name: "Farhan Ali", pin: "1105" },
-      { id: "S06", name: "Ayesha Begum", pin: "1106" },
-      { id: "S07", name: "Salman Shareef", pin: "1107" },
-      { id: "S08", name: "Hina Kauser", pin: "1108" },
-      { id: "S09", name: "Tariq Anwar", pin: "1109" },
-      { id: "S10", name: "Nida Parveen", pin: "1110" },
-      { id: "S11", name: "Imran Hashmi", pin: "1111" },
-      { id: "S12", name: "Bushra Jabeen", pin: "1112" },
-      { id: "S13", name: "Syed Danish", pin: "1113" },
-      { id: "S14", name: "Uzma Afreen", pin: "1114" },
-      { id: "S15", name: "Kamran Mirza", pin: "1115" }
+      { id: "S01", name: "Student 01", pin: "1101" },
+      { id: "S02", name: "Student 02", pin: "1102" },
+      { id: "S03", name: "Student 03", pin: "1103" },
+      { id: "S04", name: "Student 04", pin: "1104" },
+      { id: "S05", name: "Student 05", pin: "1105" },
+      { id: "S06", name: "Student 06", pin: "1106" },
+      { id: "S07", name: "Student 07", pin: "1107" },
+      { id: "S08", name: "Student 08", pin: "1108" },
+      { id: "S09", name: "Student 09", pin: "1109" },
+      { id: "S10", name: "Student 10", pin: "1110" },
+      { id: "S11", name: "Student 11", pin: "1111" },
+      { id: "S12", name: "Student 12", pin: "1112" },
+      { id: "S13", name: "Student 13", pin: "1113" },
+      { id: "S14", name: "Student 14", pin: "1114" },
+      { id: "S15", name: "Student 15", pin: "1115" }
     ];
 
     let STUDENTS = JSON.parse(localStorage.getItem("manuu_prelims_roster_15")) || DEFAULT_STUDENTS;
 
-    // Seed Sample Prelims Logs (Nov Sectionals + Weekly CSAT)
-    let prelimsLogs = JSON.parse(localStorage.getItem("manuu_prelims_logs_v2")) || [
-      { date: "2026-11-01", studentId: "S01", studentName: "Aamir Khan", phase: "SECTIONAL", subject: "Polity", attempt: 85, right: 64, wrong: 21, acc: 75.3, neg: 14.0, net: 114.0, errSilly: 4, errConcept: 6, err5050: 8, errGuess: 3 },
-      { date: "2026-11-01", studentId: "S01", studentName: "Aamir Khan", phase: "CSAT", subject: "CSAT-Mock", attempt: 52, right: 36, wrong: 16, acc: 69.2, neg: 13.3, net: 76.7, errSilly: 5, errConcept: 6, err5050: 3, errGuess: 2 },
-      { date: "2026-11-01", studentId: "S02", studentName: "Sana Fatima", phase: "SECTIONAL", subject: "Polity", attempt: 92, right: 56, wrong: 36, acc: 60.9, neg: 24.0, net: 88.0, errSilly: 6, errConcept: 8, err5050: 10, errGuess: 12 },
-      { date: "2026-11-01", studentId: "S02", studentName: "Sana Fatima", phase: "CSAT", subject: "CSAT-Mock", attempt: 44, right: 27, wrong: 17, acc: 61.4, neg: 14.2, net: 53.3, errSilly: 6, errConcept: 7, err5050: 2, errGuess: 2 },
-      { date: "2026-11-08", studentId: "S01", studentName: "Aamir Khan", phase: "SECTIONAL", subject: "Economy", attempt: 80, right: 58, wrong: 22, acc: 72.5, neg: 14.7, net: 101.3, errSilly: 3, errConcept: 9, err5050: 7, errGuess: 3 },
-      { date: "2026-11-08", studentId: "S03", studentName: "Md. Rizwan", phase: "SECTIONAL", subject: "Economy", attempt: 64, right: 50, wrong: 14, acc: 78.1, neg: 9.3, net: 90.7, errSilly: 4, errConcept: 5, err5050: 4, errGuess: 1 }
-    ];
+    // Zero pre-loaded test logs - fresh clean slate
+    let prelimsLogs = JSON.parse(localStorage.getItem("manuu_prelims_logs_v2")) || [];
 
     let activePrelimsFilter = "ALL";
     let trendChartInstance = null;
@@ -455,7 +445,6 @@
         localStorage.setItem("manuu_prelims_mentor_pin", MENTOR_PIN);
       }
 
-      // Update student names across existing logs so table stays consistent
       prelimsLogs.forEach(log => {
         const match = STUDENTS.find(s => s.id === log.studentId);
         if (match) log.studentName = match.name;
@@ -475,7 +464,23 @@
     }
 
     // ====================================================
-    // 4. UPSC DUAL-MARKING ENGINE (GS vs CSAT)
+    // 4. CLEAR ALL DATA (FRESH START)
+    // ====================================================
+    function clearAllData() {
+      if (currentRole.mode !== "ADMIN") {
+        alert("Only Mentor Admin can clear data.");
+        return;
+      }
+      if (confirm("Are you sure you want to erase all test score logs? This cannot be undone.")) {
+        prelimsLogs = [];
+        localStorage.removeItem("manuu_prelims_logs_v2");
+        renderPrelimsDashboard();
+        alert("All test data has been cleared from local storage.");
+      }
+    }
+
+    // ====================================================
+    // 5. UPSC DUAL-MARKING ENGINE (GS vs CSAT)
     // ====================================================
     function calculateUPSCScores(phase, right, wrong) {
       const attempt = right + wrong;
@@ -483,11 +488,9 @@
       let posMarks = 0, negMarks = 0;
 
       if (phase === "CSAT") {
-        // CSAT: 80 Qs, +2.5 for Right, -0.833 for Wrong
         posMarks = right * 2.5;
         negMarks = wrong * (2.5 / 3);
       } else {
-        // GS Paper 1: 100 Qs, +2.0 for Right, -0.667 for Wrong
         posMarks = right * 2.0;
         negMarks = wrong * (2.0 / 3);
       }
@@ -514,7 +517,7 @@
     }
 
     // ====================================================
-    // 5. SUBMIT PRELIMS TEST & SYNC TO GOOGLE SHEETS
+    // 6. SUBMIT PRELIMS TEST & SYNC TO GOOGLE SHEETS
     // ====================================================
     async function submitPrelimsTest() {
       const studentId = document.getElementById("testStudent").value;
@@ -577,7 +580,7 @@
     }
 
     // ====================================================
-    // 6. BULK PASTE / UNIVERSAL CSV IMPORTER
+    // 7. BULK PASTE / UNIVERSAL CSV IMPORTER
     // ====================================================
     function openBulkModal() { document.getElementById("bulkModal").classList.remove("hidden"); document.getElementById("bulkModal").classList.add("flex"); }
     function closeBulkModal() { document.getElementById("bulkModal").classList.add("hidden"); document.getElementById("bulkModal").classList.remove("flex"); }
@@ -626,7 +629,7 @@
     }
 
     // ====================================================
-    // 7. ROLE & PIN AUTHENTICATION
+    // 8. ROLE & PIN AUTHENTICATION
     // ====================================================
     function openAuthModal() { document.getElementById("authModal").classList.remove("hidden"); document.getElementById("authModal").classList.add("flex"); }
     function closeAuthModal() { document.getElementById("authModal").classList.add("hidden"); document.getElementById("authModal").classList.remove("flex"); }
@@ -640,6 +643,7 @@
         document.getElementById("prelimsStudentFilter").disabled = false;
         document.getElementById("btnBulkPaste").classList.remove("hidden");
         document.getElementById("btnRoster").classList.remove("hidden");
+        document.getElementById("btnClearData").classList.remove("hidden");
       } else {
         const st = STUDENTS.find(s => s.pin === pin);
         if (!st) { alert("Invalid PIN."); return; }
@@ -650,6 +654,7 @@
         document.getElementById("testStudent").value = st.id;
         document.getElementById("btnBulkPaste").classList.add("hidden");
         document.getElementById("btnRoster").classList.add("hidden");
+        document.getElementById("btnClearData").classList.add("hidden");
       }
       document.getElementById("pinInput").value = "";
       closeAuthModal();
@@ -657,7 +662,7 @@
     }
 
     // ====================================================
-    // 8. DIAGNOSTIC CLASSIFICATION & RENDERING
+    // 9. DIAGNOSTIC CLASSIFICATION & RENDERING
     // ====================================================
     function getDiagnosticBadge(log) {
       if (log.phase === "CSAT") {
@@ -700,25 +705,30 @@
 
       const tbody = document.getElementById("prelimsTableBody");
       tbody.innerHTML = "";
-      filtered.forEach(l => {
-        const stObj = STUDENTS.find(s => s.id === l.studentId);
-        const displayName = stObj ? stObj.name : l.studentName;
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/60">
-            <td class="py-2.5 px-2 text-slate-400">${l.date}</td>
-            <td class="px-2 font-medium text-white">${l.studentId} - ${displayName}</td>
-            <td class="px-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-slate-800 text-blue-300">${l.phase}</span> ${l.subject}</td>
-            <td class="px-2">${l.attempt}</td>
-            <td class="px-2 text-emerald-400 font-medium">${l.right}</td>
-            <td class="px-2 text-rose-400 font-medium">${l.wrong}</td>
-            <td class="px-2 font-semibold">${l.acc}%</td>
-            <td class="px-2 text-rose-400">-${l.neg}</td>
-            <td class="px-2 font-bold text-blue-400 text-sm">${l.net}</td>
-            <td class="px-2 text-amber-300">${getDominantMistake(l)}</td>
-            <td class="px-2">${getDiagnosticBadge(l)}</td>
-          </tr>
-        `;
-      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">No tests logged yet. Enter your first Sunday mock score above or paste via bulk importer.</td></tr>`;
+      } else {
+        filtered.forEach(l => {
+          const stObj = STUDENTS.find(s => s.id === l.studentId);
+          const displayName = stObj ? stObj.name : l.studentName;
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/60">
+              <td class="py-2.5 px-2 text-slate-400">${l.date}</td>
+              <td class="px-2 font-medium text-white">${l.studentId} - ${displayName}</td>
+              <td class="px-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-slate-800 text-blue-300">${l.phase}</span> ${l.subject}</td>
+              <td class="px-2">${l.attempt}</td>
+              <td class="px-2 text-emerald-400 font-medium">${l.right}</td>
+              <td class="px-2 text-rose-400 font-medium">${l.wrong}</td>
+              <td class="px-2 font-semibold">${l.acc}%</td>
+              <td class="px-2 text-rose-400">-${l.neg}</td>
+              <td class="px-2 font-bold text-blue-400 text-sm">${l.net}</td>
+              <td class="px-2 text-amber-300">${getDominantMistake(l)}</td>
+              <td class="px-2">${getDiagnosticBadge(l)}</td>
+            </tr>
+          `;
+        });
+      }
 
       const gsTests = filtered.filter(l => l.phase !== "CSAT");
       const csatTests = filtered.filter(l => l.phase === "CSAT");
@@ -747,13 +757,13 @@
       trendChartInstance = new Chart(ctx1, {
         type: "line",
         data: {
-          labels: chronological.map(d => `${d.subject} (${d.date.slice(5)})`),
+          labels: chronological.length ? chronological.map(d => `${d.subject} (${d.date.slice(5)})`) : ["No Data"],
           datasets: [
             { label: "Net Score", data: chronological.map(d => d.net), borderColor: "#3b82f6", tension: 0.3 },
             { label: "Negative Marks Lost", data: chronological.map(d => d.neg), borderColor: "#f43f5e", tension: 0.3 }
           ]
         },
-        options: { plugins: { legend: { labels: { color: "#cbd5e1" } } }, scales: { y: { ticks: { color: "#94a3b8" } }, x: { ticks: { color: "#94a3b8" } } } }
+        options: { plugins: { legend: { labels: { color: "#cbd5e1" } } }, scales: { y: { suggestedMin: 0, suggestedMax: 120, ticks: { color: "#94a3b8" } }, x: { ticks: { color: "#94a3b8" } } } }
       });
 
       const subjects = ["Polity", "Economy", "History", "Geography", "Environment", "SciTech"];
