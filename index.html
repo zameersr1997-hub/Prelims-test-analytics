@@ -26,7 +26,7 @@
         <span id="syncStatus" class="text-xs text-emerald-400 font-medium">● Cloud Sync Ready</span>
       </div>
       <h1 class="text-2xl font-bold tracking-tight mt-1">UPSC Prelims Mock Test Analytics & Diagnostic Portal</h1>
-      <p class="text-xs text-slate-400">Mentor: Zameer Ahmed | Roster Filter Active (Only Saved Students Imported) | Internal Framework</p>
+      <p class="text-xs text-slate-400">Mentor: Zameer Ahmed | Strict Roster Filtering Active | Internal Framework</p>
     </div>
 
     <!-- Action & Auth Controls -->
@@ -486,7 +486,7 @@
     }
 
     // ====================================================
-    // 4. INSTANT EXCEL / CSV REPORT PARSER (ROSTER-FILTERED)
+    // 4. INSTANT EXCEL / CSV REPORT PARSER (STRICT ROSTER FILTER)
     // ====================================================
     function handleExcelUpload(event) {
       const file = event.target.files[0];
@@ -502,24 +502,30 @@
           const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
           let importedCount = 0;
+          let skippedCount = 0;
           const testDate = new Date().toISOString().split("T")[0];
 
           jsonRows.forEach(row => {
-            let rollNo = String(row["Roll No"] || row["Rollno"] || row["Roll"] || "").trim();
-            let name = String(row["Name"] || row["Student Name"] || "").trim();
+            let rawRoll = row["Roll No"] !== undefined ? row["Roll No"] : (row["Rollno"] !== undefined ? row["Rollno"] : row["Roll"]);
+            let rollNo = String(rawRoll || "").trim();
+            // Remove decimal if excel parsed it as float (e.g. "26001.0" -> "26001")
+            if (rollNo.endsWith(".0")) {
+              rollNo = rollNo.slice(0, -2);
+            }
+
             let correct = parseFloat(row["Correct Answers"] || row["Correct"] || row["Right"] || 0);
             let incorrect = parseFloat(row["Incorrect Answers"] || row["Incorrect"] || row["Wrong"] || 0);
 
-            if (rollNo && rollNo !== "0") {
-              // STRICT ROSTER FILTER: Only import if rollNo exists in our saved STUDENTS roster
-              let rosterMatch = STUDENTS.find(s => s.id === rollNo);
+            if (rollNo && rollNo !== "0" && rollNo !== "") {
+              // STRICT ROSTER FILTER: Check if rollNo matches any saved student in our roster
+              let rosterMatch = STUDENTS.find(s => String(s.id).trim() === rollNo);
               if (rosterMatch) {
                 const calc = calculateUPSCScores("SECTIONAL", correct, incorrect);
                 const entry = {
                   action: "logPrelimsTest",
                   date: testDate,
-                  studentId: rollNo,
-                  studentName: rosterMatch.name, // Use roster name for consistency
+                  studentId: rosterMatch.id,
+                  studentName: rosterMatch.name, // Always use roster name
                   phase: "SECTIONAL",
                   subject: "GS-FLT/Report",
                   attempt: calc.attempt,
@@ -533,13 +539,15 @@
 
                 prelimsLogs.unshift(entry);
                 importedCount++;
+              } else {
+                skippedCount++;
               }
             }
           });
 
           localStorage.setItem("manuu_prelims_logs_v3", JSON.stringify(prelimsLogs));
           renderPrelimsDashboard();
-          alert(`Successfully imported test results for ${importedCount} of your roster students from ${file.name}! (Other students filtered out)`);
+          alert(`Successfully imported results for ${importedCount} roster students! (${skippedCount} non-roster students from the file were filtered out).`);
         } catch (err) {
           alert("Error parsing file: " + err.message);
         }
@@ -681,7 +689,6 @@
         const parts = line.split(/[,\t]+/).map(s => s.trim());
         if (parts.length >= 3) {
           const stKey = parts[0];
-          // STRICT ROSTER FILTER
           const stObj = STUDENTS.find(s => s.id === stKey || s.name.toLowerCase() === parts[0].toLowerCase());
           const right = parseInt(parts[1]) || 0;
           const wrong = parseInt(parts[2]) || 0;
