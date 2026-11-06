@@ -26,7 +26,7 @@
         <span id="syncStatus" class="text-xs text-emerald-400 font-medium">● Cloud Sync Ready</span>
       </div>
       <h1 class="text-2xl font-bold tracking-tight mt-1">UPSC Prelims Mock Test Analytics & Diagnostic Portal</h1>
-      <p class="text-xs text-slate-400">Mentor: Zameer Ahmed | Student Roster (5-Digit Roll Nos) | Internal Academy Performance Framework</p>
+      <p class="text-xs text-slate-400">Mentor: Zameer Ahmed | Roster Filter Active (Only Saved Students Imported) | Internal Framework</p>
     </div>
 
     <!-- Action & Auth Controls -->
@@ -256,7 +256,7 @@
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
         <div>
           <h3 class="text-lg font-bold text-white">👥 Manage Student Roster, 5-Digit Roll Numbers & PINs</h3>
-          <p class="text-xs text-slate-400">Add, edit, or remove students. Specify 5-digit roll numbers (e.g. 26001) and access PINs.</p>
+          <p class="text-xs text-slate-400">Add, edit, or remove students. Only students listed here will be imported from institute reports.</p>
         </div>
         <button onclick="closeRosterModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
@@ -285,7 +285,7 @@
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
         <div>
           <h3 class="text-lg font-bold text-white">📋 Software-Agnostic Bulk Score Importer</h3>
-          <p class="text-xs text-slate-400">Paste rows from Excel/Google Sheets (Format: RollNo or Name, Right, Wrong)</p>
+          <p class="text-xs text-slate-400">Paste rows from Excel/Google Sheets (Format: RollNo, Right, Wrong)</p>
         </div>
         <button onclick="closeBulkModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
@@ -486,7 +486,7 @@
     }
 
     // ====================================================
-    // 4. INSTANT EXCEL / CSV REPORT PARSER (GS.xlsx)
+    // 4. INSTANT EXCEL / CSV REPORT PARSER (ROSTER-FILTERED)
     // ====================================================
     function handleExcelUpload(event) {
       const file = event.target.files[0];
@@ -510,41 +510,36 @@
             let correct = parseFloat(row["Correct Answers"] || row["Correct"] || row["Right"] || 0);
             let incorrect = parseFloat(row["Incorrect Answers"] || row["Incorrect"] || row["Wrong"] || 0);
 
-            if (rollNo && rollNo !== "0" && name) {
-              let existing = STUDENTS.find(s => s.id === rollNo);
-              if (!existing) {
-                STUDENTS.push({ id: rollNo, name: name, pin: "11" + rollNo.slice(-2) });
-              } else {
-                existing.name = name;
+            if (rollNo && rollNo !== "0") {
+              // STRICT ROSTER FILTER: Only import if rollNo exists in our saved STUDENTS roster
+              let rosterMatch = STUDENTS.find(s => s.id === rollNo);
+              if (rosterMatch) {
+                const calc = calculateUPSCScores("SECTIONAL", correct, incorrect);
+                const entry = {
+                  action: "logPrelimsTest",
+                  date: testDate,
+                  studentId: rollNo,
+                  studentName: rosterMatch.name, // Use roster name for consistency
+                  phase: "SECTIONAL",
+                  subject: "GS-FLT/Report",
+                  attempt: calc.attempt,
+                  right: correct,
+                  wrong: incorrect,
+                  acc: calc.acc,
+                  neg: calc.neg,
+                  net: row["Total Marks"] !== undefined && !isNaN(row["Total Marks"]) ? Number(parseFloat(row["Total Marks"]).toFixed(1)) : calc.net,
+                  errSilly: 0, errConcept: 0, err5050: 0, errGuess: 0
+                };
+
+                prelimsLogs.unshift(entry);
+                importedCount++;
               }
-
-              const calc = calculateUPSCScores("SECTIONAL", correct, incorrect);
-              const entry = {
-                action: "logPrelimsTest",
-                date: testDate,
-                studentId: rollNo,
-                studentName: name,
-                phase: "SECTIONAL",
-                subject: "GS-FLT/Report",
-                attempt: calc.attempt,
-                right: correct,
-                wrong: incorrect,
-                acc: calc.acc,
-                neg: calc.neg,
-                net: row["Total Marks"] !== undefined && !isNaN(row["Total Marks"]) ? Number(parseFloat(row["Total Marks"]).toFixed(1)) : calc.net,
-                errSilly: 0, errConcept: 0, err5050: 0, errGuess: 0
-              };
-
-              prelimsLogs.unshift(entry);
-              importedCount++;
             }
           });
 
-          localStorage.setItem("manuu_prelims_roster_5digit", JSON.stringify(STUDENTS));
           localStorage.setItem("manuu_prelims_logs_v3", JSON.stringify(prelimsLogs));
-          populateStudentDropdowns();
           renderPrelimsDashboard();
-          alert(`Successfully imported test results for ${importedCount} students from ${file.name}!`);
+          alert(`Successfully imported test results for ${importedCount} of your roster students from ${file.name}! (Other students filtered out)`);
         } catch (err) {
           alert("Error parsing file: " + err.message);
         }
@@ -668,7 +663,7 @@
     }
 
     // ====================================================
-    // 8. BULK CSV IMPORTER
+    // 8. BULK CSV IMPORTER (ROSTER-FILTERED)
     // ====================================================
     function openBulkModal() { document.getElementById("bulkModal").classList.remove("hidden"); document.getElementById("bulkModal").classList.add("flex"); }
     function closeBulkModal() { document.getElementById("bulkModal").classList.add("hidden"); document.getElementById("bulkModal").classList.remove("flex"); }
@@ -681,10 +676,12 @@
       if (!raw) return;
 
       const lines = raw.split(/\r?\n/);
+      let importedCount = 0;
       lines.forEach(line => {
         const parts = line.split(/[,\t]+/).map(s => s.trim());
         if (parts.length >= 3) {
           const stKey = parts[0];
+          // STRICT ROSTER FILTER
           const stObj = STUDENTS.find(s => s.id === stKey || s.name.toLowerCase() === parts[0].toLowerCase());
           const right = parseInt(parts[1]) || 0;
           const wrong = parseInt(parts[2]) || 0;
@@ -707,6 +704,7 @@
             };
             prelimsLogs.unshift(entry);
             syncPayloadToSheet(entry);
+            importedCount++;
           }
         }
       });
@@ -714,6 +712,7 @@
       localStorage.setItem("manuu_prelims_logs_v3", JSON.stringify(prelimsLogs));
       renderPrelimsDashboard();
       closeBulkModal();
+      alert(`Imported ${importedCount} roster students via bulk paste.`);
     }
 
     // ====================================================
@@ -770,7 +769,7 @@
       const errs = [
         { label: "Silly/Reading Error", val: log.errSilly || 0 },
         { label: "Conceptual Gap", val: log.errConcept || 0 },
-        { label: "50:50 Elimination Fail", val: log.err5050 || 0 },
+        { label: "50:50 Fail", val: log.err5050 || 0 },
         { label: "Blind Guessing", val: log.errGuess || 0 }
       ];
       errs.sort((a, b) => b.val - a.val);
