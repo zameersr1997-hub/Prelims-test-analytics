@@ -6,6 +6,7 @@
   <title>MANUU CSE Academy | Prelims Test Analytics & Diagnostic Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; }
@@ -25,19 +26,24 @@
         <span id="syncStatus" class="text-xs text-emerald-400 font-medium">● Cloud Sync Ready</span>
       </div>
       <h1 class="text-2xl font-bold tracking-tight mt-1">UPSC Prelims Mock Test Analytics & Diagnostic Portal</h1>
-      <p class="text-xs text-slate-400">Mentor: Zameer Ahmed | 15-Student Cohort | Internal Academy Performance Framework</p>
+      <p class="text-xs text-slate-400">Mentor: Zameer Ahmed | Student Roster (5-Digit Roll Nos) | Internal Academy Performance Framework</p>
     </div>
 
     <!-- Action & Auth Controls -->
     <div class="flex flex-wrap items-center gap-2">
       <button onclick="openRosterModal()" id="btnRoster" class="px-3 py-2 rounded-lg text-xs font-semibold bg-blue-600/20 text-blue-300 border border-blue-500/40 hover:bg-blue-600/30 transition">
-        👥 Edit 15-Student Roster & PINs
+        👥 Manage Students & 5-Digit Rolls
       </button>
+      <button onclick="document.getElementById('excelFileInput').click()" id="btnUploadExcel" class="px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/30 transition">
+        📂 Upload Institute Report (.xlsx/.csv)
+      </button>
+      <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)" />
+      
       <button onclick="openBulkModal()" id="btnBulkPaste" class="px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 transition">
-        📋 Bulk Paste / CSV Grid
+        📋 Bulk Paste Grid
       </button>
       <button onclick="clearAllData()" id="btnClearData" class="px-3 py-2 rounded-lg text-xs font-semibold bg-rose-600/20 text-rose-300 border border-rose-500/40 hover:bg-rose-600/30 transition">
-        🗑️ Clear All Test Data
+        🗑️ Clear Data
       </button>
       <button onclick="openAuthModal()" id="roleBadge" class="px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition">
         🔑 Mode: Mentor Admin
@@ -59,7 +65,7 @@
       <div class="flex items-center gap-3 text-xs">
         <label class="text-slate-400 font-medium">Inspect Student:</label>
         <select id="prelimsStudentFilter" onchange="renderPrelimsDashboard()" class="text-xs py-1.5">
-          <option value="ALL">All 15 Students (Batch Overview)</option>
+          <option value="ALL">All Students (Batch Overview)</option>
         </select>
       </div>
     </div>
@@ -99,7 +105,7 @@
         <div class="space-y-3 text-xs">
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-slate-400 mb-1">Student (15 Slots)</label>
+              <label class="block text-slate-400 mb-1">Student (5-Digit Roll)</label>
               <select id="testStudent" class="w-full"></select>
             </div>
             <div>
@@ -206,11 +212,11 @@
       </div>
     </div>
 
-    <!-- 15-Student Diagnostic Matrix -->
+    <!-- Student Diagnostic Matrix -->
     <div class="card p-5">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
         <div>
-          <h2 class="text-base font-semibold">Sunday Prelims Diagnostic Ledger & 4-Tier Academy Classification (15 Students)</h2>
+          <h2 class="text-base font-semibold">Sunday Prelims Diagnostic Ledger & 4-Tier Academy Classification</h2>
           <p class="text-xs text-slate-400">Tracks attempt calibration, negative marking bleed, CSAT safety, and dominant error pattern.</p>
         </div>
         <div class="flex gap-2">
@@ -225,7 +231,7 @@
           <thead class="uppercase text-slate-400 border-b border-slate-700 bg-slate-900/50">
             <tr>
               <th class="py-2.5 px-2">Date</th>
-              <th class="px-2">Student</th>
+              <th class="px-2">Student Name & Roll No</th>
               <th class="px-2">Track / Subject</th>
               <th class="px-2">Attempt</th>
               <th class="px-2 text-emerald-400">Right</th>
@@ -244,13 +250,13 @@
 
   </main>
 
-  <!-- EDITABLE 15-STUDENT ROSTER & PIN MODAL -->
+  <!-- EDITABLE STUDENT ROSTER & 5-DIGIT ROLL NO MODAL -->
   <div id="rosterModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4 z-50">
-    <div class="card max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+    <div class="card max-w-4xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
         <div>
-          <h3 class="text-lg font-bold text-white">👥 Manage 15-Student Roster & Access PINs</h3>
-          <p class="text-xs text-slate-400">Edit student names and 4-digit PINs anytime. Changes update all logs and sync to Google Sheets.</p>
+          <h3 class="text-lg font-bold text-white">👥 Manage Student Roster, 5-Digit Roll Numbers & PINs</h3>
+          <p class="text-xs text-slate-400">Add, edit, or remove students. Specify 5-digit roll numbers (e.g. 26001) and access PINs.</p>
         </div>
         <button onclick="closeRosterModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
@@ -258,9 +264,12 @@
       <div class="overflow-y-auto pr-2 space-y-2 flex-1" id="rosterEditContainer"></div>
 
       <div class="flex items-center justify-between border-t border-slate-700 pt-3">
-        <div class="flex items-center gap-2 text-xs">
-          <span class="text-slate-400">Mentor Admin Master PIN:</span>
-          <input type="text" id="mentorPinEdit" maxlength="6" class="w-24 text-center font-mono text-amber-300" />
+        <div class="flex items-center gap-3">
+          <button onclick="addNewStudentRow()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs text-white font-semibold rounded">+ Add Student</button>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-400">Admin PIN:</span>
+            <input type="text" id="mentorPinEdit" maxlength="6" class="w-20 text-center font-mono text-amber-300 text-xs py-1" />
+          </div>
         </div>
         <div class="flex gap-2">
           <button onclick="closeRosterModal()" class="px-4 py-2 rounded-lg text-xs bg-slate-800 text-slate-300">Cancel</button>
@@ -276,7 +285,7 @@
       <div class="flex items-center justify-between border-b border-slate-700 pb-3">
         <div>
           <h3 class="text-lg font-bold text-white">📋 Software-Agnostic Bulk Score Importer</h3>
-          <p class="text-xs text-slate-400">Paste rows from Excel/Google Sheets or any OMR software export (StudentID or Name, Right, Wrong)</p>
+          <p class="text-xs text-slate-400">Paste rows from Excel/Google Sheets (Format: RollNo or Name, Right, Wrong)</p>
         </div>
         <button onclick="closeBulkModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
@@ -309,8 +318,8 @@
         </div>
       </div>
       <div class="text-xs space-y-1">
-        <label class="block text-slate-300 font-medium">Paste CSV / Tab-Separated Rows (Format: <code class="text-blue-400">StudentID, Right, Wrong</code>)</label>
-        <textarea id="bulkTextarea" rows="6" class="w-full font-mono text-xs" placeholder="S01, 62, 20&#10;S02, 55, 28&#10;S03, 49, 15"></textarea>
+        <label class="block text-slate-300 font-medium">Paste CSV / Tab-Separated Rows (<code class="text-blue-400">RollNo, Right, Wrong</code>)</label>
+        <textarea id="bulkTextarea" rows="6" class="w-full font-mono text-xs" placeholder="26001, 39, 43&#10;26002, 38, 36"></textarea>
       </div>
       <div class="flex justify-end gap-2">
         <button onclick="closeBulkModal()" class="px-4 py-2 rounded-lg text-xs bg-slate-800 text-slate-300">Cancel</button>
@@ -327,7 +336,7 @@
         <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white">✕</button>
       </div>
       <div class="text-xs space-y-3">
-        <p class="text-slate-400">Enter your 4-digit Student PIN (e.g., <code class="text-blue-300">1101</code>–<code class="text-blue-300">1115</code>) or Mentor Admin PIN (<code class="text-amber-300">9999</code>):</p>
+        <p class="text-slate-400">Enter your Student PIN or Mentor Admin PIN (<code class="text-amber-300">9999</code>):</p>
         <input type="password" id="pinInput" maxlength="6" placeholder="••••" class="w-full text-center text-lg tracking-widest" />
         <button onclick="verifyPin()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg">Unlock View</button>
       </div>
@@ -336,34 +345,32 @@
 
   <script>
     // ====================================================
-    // 1. CONFIGURATION & EDITABLE 15-STUDENT ROSTER
+    // 1. CONFIGURATION & EDITABLE ROSTER (5-DIGIT ROLLS)
     // ====================================================
     const SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
     let MENTOR_PIN = localStorage.getItem("manuu_prelims_mentor_pin") || "9999";
     let currentRole = { mode: "ADMIN", studentId: "ALL", name: "Mentor Admin" };
 
     const DEFAULT_STUDENTS = [
-      { id: "S01", name: "Student 01", pin: "1101" },
-      { id: "S02", name: "Student 02", pin: "1102" },
-      { id: "S03", name: "Student 03", pin: "1103" },
-      { id: "S04", name: "Student 04", pin: "1104" },
-      { id: "S05", name: "Student 05", pin: "1105" },
-      { id: "S06", name: "Student 06", pin: "1106" },
-      { id: "S07", name: "Student 07", pin: "1107" },
-      { id: "S08", name: "Student 08", pin: "1108" },
-      { id: "S09", name: "Student 09", pin: "1109" },
-      { id: "S10", name: "Student 10", pin: "1110" },
-      { id: "S11", name: "Student 11", pin: "1111" },
-      { id: "S12", name: "Student 12", pin: "1112" },
-      { id: "S13", name: "Student 13", pin: "1113" },
-      { id: "S14", name: "Student 14", pin: "1114" },
-      { id: "S15", name: "Student 15", pin: "1115" }
+      { id: "26001", name: "Aamir Shabbir", pin: "1101" },
+      { id: "26002", name: "Abdul Azeez", pin: "1102" },
+      { id: "26003", name: "Alisha Khan", pin: "1103" },
+      { id: "26004", name: "Altaf Raza", pin: "1104" },
+      { id: "26007", name: "ChH.SD. Qudaratulla Soheil", pin: "1107" },
+      { id: "26008", name: "Durgam Kalyani", pin: "1108" },
+      { id: "26009", name: "Faiyaz Basha", pin: "1109" },
+      { id: "26010", name: "Gazala Perween", pin: "1110" },
+      { id: "26015", name: "Libin P Toms", pin: "1115" },
+      { id: "26017", name: "Madem Satyanaryana", pin: "1117" },
+      { id: "26024", name: "Mohammed Sohail Nasir", pin: "1124" },
+      { id: "26027", name: "Mujaheed Sheikh", pin: "1127" },
+      { id: "26030", name: "Nasir Ali", pin: "1130" },
+      { id: "26037", name: "Saba Tabassum", pin: "1137" },
+      { id: "26040", name: "Sandeep Naik", pin: "1140" }
     ];
 
-    let STUDENTS = JSON.parse(localStorage.getItem("manuu_prelims_roster_15")) || DEFAULT_STUDENTS;
-
-    // Zero pre-loaded test logs - fresh clean slate
-    let prelimsLogs = JSON.parse(localStorage.getItem("manuu_prelims_logs_v2")) || [];
+    let STUDENTS = JSON.parse(localStorage.getItem("manuu_prelims_roster_5digit")) || DEFAULT_STUDENTS;
+    let prelimsLogs = JSON.parse(localStorage.getItem("manuu_prelims_logs_v3")) || [];
 
     let activePrelimsFilter = "ALL";
     let trendChartInstance = null;
@@ -388,7 +395,7 @@
 
       const prevSelectedFilter = s3.value || "ALL";
       s2.innerHTML = "";
-      s3.innerHTML = `<option value="ALL">All 15 Students (Batch Overview)</option>`;
+      s3.innerHTML = `<option value="ALL">All Students (Batch Overview)</option>`;
 
       STUDENTS.forEach(st => {
         s2.innerHTML += `<option value="${st.id}">${st.id} - ${st.name}</option>`;
@@ -399,31 +406,51 @@
     }
 
     // ====================================================
-    // 3. EDITABLE 15-STUDENT ROSTER & PIN MANAGER
+    // 3. EDITABLE ROSTER & 5-DIGIT ROLL NO MANAGER
     // ====================================================
     function openRosterModal() {
       if (currentRole.mode !== "ADMIN") {
-        alert("Only Mentor Admin can edit student names and PINs.");
+        alert("Only Mentor Admin can edit student roster.");
         return;
       }
+      renderRosterRows();
+      document.getElementById("mentorPinEdit").value = MENTOR_PIN;
+      document.getElementById("rosterModal").classList.remove("hidden");
+      document.getElementById("rosterModal").classList.add("flex");
+    }
+
+    function renderRosterRows() {
       const container = document.getElementById("rosterEditContainer");
       container.innerHTML = "";
       STUDENTS.forEach((st, idx) => {
         container.innerHTML += `
-          <div class="grid grid-cols-12 gap-2 items-center bg-slate-900/70 p-2 rounded-lg border border-slate-800 text-xs">
-            <div class="col-span-2 font-bold text-blue-400 px-2">${st.id}</div>
-            <div class="col-span-7">
+          <div class="grid grid-cols-12 gap-2 items-center bg-slate-900/70 p-2 rounded-lg border border-slate-800 text-xs" id="rosterRow_${idx}">
+            <div class="col-span-3">
+              <input type="text" id="editId_${idx}" value="${st.id}" placeholder="5-Digit Roll" class="w-full text-xs py-1.5 font-mono text-blue-300" />
+            </div>
+            <div class="col-span-6">
               <input type="text" id="editName_${idx}" value="${st.name}" placeholder="Student Name" class="w-full text-xs py-1.5" />
             </div>
-            <div class="col-span-3">
-              <input type="text" id="editPin_${idx}" value="${st.pin}" maxlength="6" placeholder="4-Digit PIN" class="w-full text-center font-mono text-xs py-1.5 text-emerald-300" />
+            <div class="col-span-2">
+              <input type="text" id="editPin_${idx}" value="${st.pin}" maxlength="6" placeholder="PIN" class="w-full text-center font-mono text-xs py-1.5 text-emerald-300" />
+            </div>
+            <div class="col-span-1 text-center">
+              <button onclick="removeStudentRow(${idx})" class="text-rose-400 hover:text-rose-300 font-bold px-2 py-1">✕</button>
             </div>
           </div>
         `;
       });
-      document.getElementById("mentorPinEdit").value = MENTOR_PIN;
-      document.getElementById("rosterModal").classList.remove("hidden");
-      document.getElementById("rosterModal").classList.add("flex");
+    }
+
+    function addNewStudentRow() {
+      const nextRoll = (26001 + STUDENTS.length).toString();
+      STUDENTS.push({ id: nextRoll, name: "New Student", pin: (1100 + STUDENTS.length + 1).toString() });
+      renderRosterRows();
+    }
+
+    function removeStudentRow(idx) {
+      STUDENTS.splice(idx, 1);
+      renderRosterRows();
     }
 
     function closeRosterModal() {
@@ -432,55 +459,118 @@
     }
 
     function saveRosterChanges() {
-      STUDENTS.forEach((st, idx) => {
-        const newName = document.getElementById(`editName_${idx}`).value.trim();
-        const newPin = document.getElementById(`editPin_${idx}`).value.trim();
-        if (newName) st.name = newName;
-        if (newPin) st.pin = newPin;
+      const updated = [];
+      const rows = document.querySelectorAll("[id^='rosterRow_']");
+      rows.forEach((_, idx) => {
+        const id = document.getElementById(`editId_${idx}`).value.trim();
+        const name = document.getElementById(`editName_${idx}`).value.trim();
+        const pin = document.getElementById(`editPin_${idx}`).value.trim();
+        if (id && name) {
+          updated.push({ id, name, pin: pin || "1100" });
+        }
       });
 
+      STUDENTS = updated;
       const newMentorPin = document.getElementById("mentorPinEdit").value.trim();
       if (newMentorPin) {
         MENTOR_PIN = newMentorPin;
         localStorage.setItem("manuu_prelims_mentor_pin", MENTOR_PIN);
       }
 
-      prelimsLogs.forEach(log => {
-        const match = STUDENTS.find(s => s.id === log.studentId);
-        if (match) log.studentName = match.name;
-      });
-
-      localStorage.setItem("manuu_prelims_roster_15", JSON.stringify(STUDENTS));
-      localStorage.setItem("manuu_prelims_logs_v2", JSON.stringify(prelimsLogs));
-
+      localStorage.setItem("manuu_prelims_roster_5digit", JSON.stringify(STUDENTS));
       populateStudentDropdowns();
       renderPrelimsDashboard();
       closeRosterModal();
 
-      syncPayloadToSheet({
-        action: "saveRoster",
-        students: STUDENTS
-      });
+      syncPayloadToSheet({ action: "saveRoster", students: STUDENTS });
     }
 
     // ====================================================
-    // 4. CLEAR ALL DATA (FRESH START)
+    // 4. INSTANT EXCEL / CSV REPORT PARSER (GS.xlsx)
+    // ====================================================
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+          let importedCount = 0;
+          const testDate = new Date().toISOString().split("T")[0];
+
+          jsonRows.forEach(row => {
+            let rollNo = String(row["Roll No"] || row["Rollno"] || row["Roll"] || "").trim();
+            let name = String(row["Name"] || row["Student Name"] || "").trim();
+            let correct = parseFloat(row["Correct Answers"] || row["Correct"] || row["Right"] || 0);
+            let incorrect = parseFloat(row["Incorrect Answers"] || row["Incorrect"] || row["Wrong"] || 0);
+
+            if (rollNo && rollNo !== "0" && name) {
+              let existing = STUDENTS.find(s => s.id === rollNo);
+              if (!existing) {
+                STUDENTS.push({ id: rollNo, name: name, pin: "11" + rollNo.slice(-2) });
+              } else {
+                existing.name = name;
+              }
+
+              const calc = calculateUPSCScores("SECTIONAL", correct, incorrect);
+              const entry = {
+                action: "logPrelimsTest",
+                date: testDate,
+                studentId: rollNo,
+                studentName: name,
+                phase: "SECTIONAL",
+                subject: "GS-FLT/Report",
+                attempt: calc.attempt,
+                right: correct,
+                wrong: incorrect,
+                acc: calc.acc,
+                neg: calc.neg,
+                net: row["Total Marks"] !== undefined && !isNaN(row["Total Marks"]) ? Number(parseFloat(row["Total Marks"]).toFixed(1)) : calc.net,
+                errSilly: 0, errConcept: 0, err5050: 0, errGuess: 0
+              };
+
+              prelimsLogs.unshift(entry);
+              importedCount++;
+            }
+          });
+
+          localStorage.setItem("manuu_prelims_roster_5digit", JSON.stringify(STUDENTS));
+          localStorage.setItem("manuu_prelims_logs_v3", JSON.stringify(prelimsLogs));
+          populateStudentDropdowns();
+          renderPrelimsDashboard();
+          alert(`Successfully imported test results for ${importedCount} students from ${file.name}!`);
+        } catch (err) {
+          alert("Error parsing file: " + err.message);
+        }
+        event.target.value = "";
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ====================================================
+    // 5. CLEAR ALL DATA
     // ====================================================
     function clearAllData() {
       if (currentRole.mode !== "ADMIN") {
         alert("Only Mentor Admin can clear data.");
         return;
       }
-      if (confirm("Are you sure you want to erase all test score logs? This cannot be undone.")) {
+      if (confirm("Are you sure you want to erase all test score logs?")) {
         prelimsLogs = [];
-        localStorage.removeItem("manuu_prelims_logs_v2");
+        localStorage.removeItem("manuu_prelims_logs_v3");
         renderPrelimsDashboard();
-        alert("All test data has been cleared from local storage.");
+        alert("All test logs cleared.");
       }
     }
 
     // ====================================================
-    // 5. UPSC DUAL-MARKING ENGINE (GS vs CSAT)
+    // 6. UPSC DUAL-MARKING ENGINE
     // ====================================================
     function calculateUPSCScores(phase, right, wrong) {
       const attempt = right + wrong;
@@ -517,7 +607,7 @@
     }
 
     // ====================================================
-    // 6. SUBMIT PRELIMS TEST & SYNC TO GOOGLE SHEETS
+    // 7. SUBMIT TEST & SYNC
     // ====================================================
     async function submitPrelimsTest() {
       const studentId = document.getElementById("testStudent").value;
@@ -539,7 +629,7 @@
         action: "logPrelimsTest",
         date,
         studentId,
-        studentName: studentObj.name,
+        studentName: studentObj ? studentObj.name : "Unknown",
         phase,
         subject,
         attempt: calc.attempt,
@@ -555,14 +645,14 @@
       };
 
       prelimsLogs.unshift(entry);
-      localStorage.setItem("manuu_prelims_logs_v2", JSON.stringify(prelimsLogs));
+      localStorage.setItem("manuu_prelims_logs_v3", JSON.stringify(prelimsLogs));
       renderPrelimsDashboard();
       syncPayloadToSheet(entry);
     }
 
     async function syncPayloadToSheet(payload) {
       if (SCRIPT_URL.startsWith("http")) {
-        document.getElementById("syncStatus").innerText = "⏳ Syncing to Google Sheet...";
+        document.getElementById("syncStatus").innerText = "⏳ Syncing...";
         try {
           await fetch(SCRIPT_URL, {
             method: "POST",
@@ -570,17 +660,15 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
           });
-          document.getElementById("syncStatus").innerText = "● Synced to Google Sheet";
+          document.getElementById("syncStatus").innerText = "● Synced to Sheet";
         } catch (e) {
-          document.getElementById("syncStatus").innerText = "⚠️ Saved Locally (Offline)";
+          document.getElementById("syncStatus").innerText = "⚠️ Saved Locally";
         }
-      } else {
-        document.getElementById("syncStatus").innerText = "● Saved to Local Browser Storage";
       }
     }
 
     // ====================================================
-    // 7. BULK PASTE / UNIVERSAL CSV IMPORTER
+    // 8. BULK CSV IMPORTER
     // ====================================================
     function openBulkModal() { document.getElementById("bulkModal").classList.remove("hidden"); document.getElementById("bulkModal").classList.add("flex"); }
     function closeBulkModal() { document.getElementById("bulkModal").classList.add("hidden"); document.getElementById("bulkModal").classList.remove("flex"); }
@@ -596,7 +684,7 @@
       lines.forEach(line => {
         const parts = line.split(/[,\t]+/).map(s => s.trim());
         if (parts.length >= 3) {
-          const stKey = parts[0].toUpperCase();
+          const stKey = parts[0];
           const stObj = STUDENTS.find(s => s.id === stKey || s.name.toLowerCase() === parts[0].toLowerCase());
           const right = parseInt(parts[1]) || 0;
           const wrong = parseInt(parts[2]) || 0;
@@ -623,13 +711,13 @@
         }
       });
 
-      localStorage.setItem("manuu_prelims_logs_v2", JSON.stringify(prelimsLogs));
+      localStorage.setItem("manuu_prelims_logs_v3", JSON.stringify(prelimsLogs));
       renderPrelimsDashboard();
       closeBulkModal();
     }
 
     // ====================================================
-    // 8. ROLE & PIN AUTHENTICATION
+    // 9. AUTHENTICATION
     // ====================================================
     function openAuthModal() { document.getElementById("authModal").classList.remove("hidden"); document.getElementById("authModal").classList.add("flex"); }
     function closeAuthModal() { document.getElementById("authModal").classList.add("hidden"); document.getElementById("authModal").classList.remove("flex"); }
@@ -644,6 +732,7 @@
         document.getElementById("btnBulkPaste").classList.remove("hidden");
         document.getElementById("btnRoster").classList.remove("hidden");
         document.getElementById("btnClearData").classList.remove("hidden");
+        document.getElementById("btnUploadExcel").classList.remove("hidden");
       } else {
         const st = STUDENTS.find(s => s.pin === pin);
         if (!st) { alert("Invalid PIN."); return; }
@@ -655,6 +744,7 @@
         document.getElementById("btnBulkPaste").classList.add("hidden");
         document.getElementById("btnRoster").classList.add("hidden");
         document.getElementById("btnClearData").classList.add("hidden");
+        document.getElementById("btnUploadExcel").classList.add("hidden");
       }
       document.getElementById("pinInput").value = "";
       closeAuthModal();
@@ -662,7 +752,7 @@
     }
 
     // ====================================================
-    // 9. DIAGNOSTIC CLASSIFICATION & RENDERING
+    // 10. DIAGNOSTICS & RENDERING
     // ====================================================
     function getDiagnosticBadge(log) {
       if (log.phase === "CSAT") {
@@ -707,7 +797,7 @@
       tbody.innerHTML = "";
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">No tests logged yet. Enter your first Sunday mock score above or paste via bulk importer.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-500 italic">No tests logged yet. Upload your institute Excel report above or record a score manually.</td></tr>`;
       } else {
         filtered.forEach(l => {
           const stObj = STUDENTS.find(s => s.id === l.studentId);
@@ -715,7 +805,7 @@
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/60">
               <td class="py-2.5 px-2 text-slate-400">${l.date}</td>
-              <td class="px-2 font-medium text-white">${l.studentId} - ${displayName}</td>
+              <td class="px-2 font-medium text-white font-mono">${l.studentId} - ${displayName}</td>
               <td class="px-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-slate-800 text-blue-300">${l.phase}</span> ${l.subject}</td>
               <td class="px-2">${l.attempt}</td>
               <td class="px-2 text-emerald-400 font-medium">${l.right}</td>
@@ -763,7 +853,7 @@
             { label: "Negative Marks Lost", data: chronological.map(d => d.neg), borderColor: "#f43f5e", tension: 0.3 }
           ]
         },
-        options: { plugins: { legend: { labels: { color: "#cbd5e1" } } }, scales: { y: { suggestedMin: 0, suggestedMax: 120, ticks: { color: "#94a3b8" } }, x: { ticks: { color: "#94a3b8" } } } }
+        options: { plugins: { legend: { labels: { color: "#cbd5e1" } } }, scales: { y: { suggestedMin: -10, suggestedMax: 120, ticks: { color: "#94a3b8" } }, x: { ticks: { color: "#94a3b8" } } } }
       });
 
       const subjects = ["Polity", "Economy", "History", "Geography", "Environment", "SciTech"];
@@ -789,12 +879,12 @@
     }
 
     function exportPrelimsCSV() {
-      const headers = ["Date,StudentID,Student,Phase,Subject,Attempt,Right,Wrong,Accuracy,NegPenalty,NetScore,SillyErr,ConceptErr,5050Err,BlindGuess"];
+      const headers = ["Date,RollNo,StudentName,Phase,Subject,Attempt,Right,Wrong,Accuracy,NegPenalty,NetScore,SillyErr,ConceptErr,5050Err,BlindGuess"];
       const rows = prelimsLogs.map(l => `${l.date},${l.studentId},${l.studentName},${l.phase},${l.subject},${l.attempt},${l.right},${l.wrong},${l.acc},${l.neg},${l.net},${l.errSilly},${l.errConcept},${l.err5050},${l.errGuess}`);
       const blob = new Blob([[...headers, ...rows].join("\n")], { type: "text/csv" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "MANUU_Prelims_Analytics_15Students_Backup.csv";
+      a.download = "MANUU_Prelims_Analytics_Backup.csv";
       a.click();
     }
   </script>
